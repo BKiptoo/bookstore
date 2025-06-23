@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Bookstore</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Modern Bookstore</h1>
+            <p>Discover your next favorite book</p>
+            <div class="header-icons">
+                <div class="cart" id="cart-toggle">
+                    <span class="cart-icon">🛒</span>
+                    <span id="cart-count">0</span>
+                </div>
+                <div class="wishlist" id="wishlist-toggle">
+                    <span class="wishlist-icon">☆</span>
+                    <span id="wishlist-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search for books...">
+        <button id="search-button">Search</button>
+    </div>
+    <div class="container">
+        <div id="book-grid" class="book-grid"></div>
+    </div>
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-cart">×</span>
+            <h2>Your Cart</h2>
+            <div id="cart-items"></div>
+        </div>
+    </div>
+    <div id="wishlist-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-wishlist">×</span>
+            <h2>Your Wishlist</h2>
+            <div id="wishlist-items"></div>
+        </div>
+    </div>
+    <script src="src/script.js"></script>
+</body>
+</html>
