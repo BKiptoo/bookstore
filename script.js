@@ -1,12 +1,35 @@
-// ========== Config ==========
-// Google Books subject categories used in dropdowns & homepage (match with your HTML links)
+// Google Books subject categories used in dropdowns & homepage (match with my HTML links)
 const CATEGORIES = [
-  { id: "Horror", name: "Horror", img: "https://img.icons8.com/ios-filled/100/haunted-house.png" },
-  { id: "Thriller", name: "Thriller", img: "https://img.icons8.com/ios-filled/100/spy.png" },
-  { id: "Romance", name: "Romantic", img: "https://img.icons8.com/ios-filled/100/love-circled.png" },
-  { id: "Philosophy", name: "Philosophy", img: "https://img.icons8.com/ios-filled/100/greek-pillar.png" },
-  { id: "Political Science", name: "Politics", img: "https://img.icons8.com/ios-filled/100/ballot-box.png" },
-  { id: "Self-Help", name: "Self-help", img: "https://img.icons8.com/ios-filled/100/goal.png" }
+  {
+    id: "Horror",
+    name: "Horror",
+    img: "https://img.icons8.com/ios-filled/100/haunted-house.png",
+  },
+  {
+    id: "Thriller",
+    name: "Thriller",
+    img: "https://img.icons8.com/?size=100&id=10528&format=png&color=000000",
+  },
+  {
+    id: "Romance",
+    name: "Romantic",
+    img: "https://img.icons8.com/ios-filled/100/love-circled.png",
+  },
+  {
+    id: "Philosophy",
+    name: "Philosophy",
+    img: "https://img.icons8.com/ios-filled/100/greek-pillar.png",
+  },
+  {
+    id: "Political Science",
+    name: "Politics",
+    img: "https://img.icons8.com/?size=100&id=Fg6mvBMgeSGW&format=png&color=000000",
+  },
+  {
+    id: "Self-Help",
+    name: "Self-help",
+    img: "https://img.icons8.com/ios-filled/100/goal.png",
+  },
 ];
 const GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes";
 const DEFAULT_IMG = "https://via.placeholder.com/100x150?text=No+Cover";
@@ -16,16 +39,30 @@ function formatKesh(amount) {
   if (typeof amount !== "number" || isNaN(amount)) return "Ksh0.00";
   return `Ksh${amount.toLocaleString("en-KE")}.00`;
 }
-function saveCart(cart) { localStorage.setItem("cart", JSON.stringify(cart)); }
-function getCart() { return JSON.parse(localStorage.getItem("cart") || "[]"); }
-function saveOrders(orders) { localStorage.setItem("orders", JSON.stringify(orders)); }
-function getOrders() { return JSON.parse(localStorage.getItem("orders") || "[]"); }
-function saveProfile(profile) { localStorage.setItem("profile", JSON.stringify(profile)); }
-function getProfile() { return JSON.parse(localStorage.getItem("profile") || "{}"); }
+function saveCart(cart) {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
+function getCart() {
+  return JSON.parse(localStorage.getItem("cart") || "[]");
+}
+function saveOrders(orders) {
+  localStorage.setItem("orders", JSON.stringify(orders));
+}
+function getOrders() {
+  return JSON.parse(localStorage.getItem("orders") || "[]");
+}
+function saveProfile(profile) {
+  localStorage.setItem("profile", JSON.stringify(profile));
+}
+function getProfile() {
+  return JSON.parse(localStorage.getItem("profile") || "{}");
+}
 function updateCartCount() {
   const cart = getCart();
   const count = cart.reduce((a, b) => a + (b.qty || 1), 0);
-  document.querySelectorAll("#cart-count").forEach(el => el.textContent = count);
+  document
+    .querySelectorAll("#cart-count")
+    .forEach((el) => (el.textContent = count));
 }
 
 // ========== Google Books Fetch ==========
@@ -34,16 +71,20 @@ async function fetchBooksByCategory(subject, maxResults = 12) {
     q: `subject:"${subject}"`,
     maxResults,
     printType: "books",
-    orderBy: "relevance"
+    orderBy: "relevance",
   });
   const resp = await fetch(`${GOOGLE_BOOKS_API}?${params}`);
   const data = await resp.json();
   if (!data.items) return [];
-  return data.items.map(item => {
+  return data.items.map((item) => {
     const info = item.volumeInfo;
     // Random price for demo purposes if no price is available
     let price = Math.floor(Math.random() * 1000) + 500;
-    if (item.saleInfo && item.saleInfo.listPrice && typeof item.saleInfo.listPrice.amount === "number") {
+    if (
+      item.saleInfo &&
+      item.saleInfo.listPrice &&
+      typeof item.saleInfo.listPrice.amount === "number"
+    ) {
       price = Math.round(item.saleInfo.listPrice.amount * 140);
     }
     return {
@@ -51,7 +92,10 @@ async function fetchBooksByCategory(subject, maxResults = 12) {
       title: info.title,
       author: (info.authors && info.authors.join(", ")) || "Unknown",
       price,
-      img: (info.imageLinks && info.imageLinks.thumbnail) ? info.imageLinks.thumbnail : DEFAULT_IMG
+      img:
+        info.imageLinks && info.imageLinks.thumbnail
+          ? info.imageLinks.thumbnail
+          : DEFAULT_IMG,
     };
   });
 }
@@ -75,7 +119,7 @@ function renderCategories() {
   const container = document.getElementById("home-categories");
   if (!container) return;
   container.innerHTML = "";
-  CATEGORIES.forEach(cat => {
+  CATEGORIES.forEach((cat) => {
     const card = document.createElement("div");
     card.className = "category-card col";
     card.tabIndex = 0;
@@ -87,7 +131,9 @@ function renderCategories() {
     `;
     card.onclick = () => {
       // Go to books.html with category in query
-      window.location.href = `books.html?category=${encodeURIComponent(cat.id)}`;
+      window.location.href = `books.html?category=${encodeURIComponent(
+        cat.id
+      )}`;
     };
     container.appendChild(card);
   });
@@ -98,7 +144,7 @@ async function renderBooksPage() {
   // Get category from URL query
   const urlParams = new URLSearchParams(window.location.search);
   const categoryId = urlParams.get("category") || "Horror";
-  const cat = CATEGORIES.find(c => c.id === categoryId);
+  const cat = CATEGORIES.find((c) => c.id === categoryId);
   const title = document.getElementById("books-category-title");
   if (title) title.textContent = cat ? cat.name + " Books" : "Books";
 
@@ -116,7 +162,7 @@ async function renderBooksPage() {
     return;
   }
   list.innerHTML = "";
-  books.forEach(book => {
+  books.forEach((book) => {
     const col = document.createElement("div");
     col.className = "col";
     col.innerHTML = `
@@ -125,7 +171,9 @@ async function renderBooksPage() {
         <div class="book-title">${book.title}</div>
         <div class="book-author">by ${book.author}</div>
         <div class="book-price">${formatKesh(book.price)}</div>
-        <button class="btn btn-outline-primary mt-auto" data-id="${book.id}">Add to Cart</button>
+        <button class="btn btn-outline-primary mt-auto" data-id="${
+          book.id
+        }">Add to Cart</button>
       </div>
     `;
     col.querySelector("button").onclick = () => addToCart(book);
@@ -136,7 +184,7 @@ async function renderBooksPage() {
 // ========== Cart ==========
 function addToCart(book) {
   let cart = getCart();
-  const found = cart.find(item => item.id === book.id);
+  const found = cart.find((item) => item.id === book.id);
   if (found) {
     found.qty++;
   } else {
@@ -149,7 +197,7 @@ function addToCart(book) {
 
 function removeFromCart(bookId) {
   let cart = getCart();
-  cart = cart.filter(item => item.id !== bookId);
+  cart = cart.filter((item) => item.id !== bookId);
   saveCart(cart);
   renderCartList();
   updateCartCount();
@@ -161,7 +209,7 @@ function renderCartList() {
   if (!cartList) return;
   cartList.innerHTML = "";
   let total = 0;
-  cart.forEach(item => {
+  cart.forEach((item) => {
     total += item.price * item.qty;
     const li = document.createElement("li");
     li.className = "list-group-item d-flex align-items-center";
@@ -189,7 +237,9 @@ function setupOrderModal() {
   const orderDetailsModalElem = document.getElementById("orderDetailsModal");
   let orderDetailsModal = null;
   if (orderDetailsModalElem && window.bootstrap) {
-    orderDetailsModal = bootstrap.Modal.getOrCreateInstance(orderDetailsModalElem);
+    orderDetailsModal = bootstrap.Modal.getOrCreateInstance(
+      orderDetailsModalElem
+    );
   }
   placeOrderBtn.onclick = () => {
     if (!getCart().length) {
@@ -214,17 +264,17 @@ function setupOrderModal() {
         state: document.getElementById("order-state").value.trim(),
         country: document.getElementById("order-country").value.trim(),
         pincode: document.getElementById("order-pincode").value.trim(),
-        email: document.getElementById("order-email").value.trim()
+        email: document.getElementById("order-email").value.trim(),
       };
       saveProfile(profile);
       // Create order
       const cart = getCart();
       const order = {
         id: Date.now(),
-        items: cart.map(item => ({ ...item })),
+        items: cart.map((item) => ({ ...item })),
         total: cart.reduce((sum, item) => sum + item.price * item.qty, 0),
         profile: { ...profile },
-        date: new Date().toLocaleString()
+        date: new Date().toLocaleString(),
       };
       let orders = getOrders();
       orders.push(order);
@@ -261,23 +311,30 @@ function renderOrders() {
     ordersList.innerHTML = `<li class="list-group-item text-center">No orders yet.</li>`;
     return;
   }
-  orders.slice().reverse().forEach(order => {
-    const li = document.createElement("li");
-    li.className = "list-group-item";
-    li.innerHTML = `
+  orders
+    .slice()
+    .reverse()
+    .forEach((order) => {
+      const li = document.createElement("li");
+      li.className = "list-group-item";
+      li.innerHTML = `
       <div class="fw-bold mb-1">Order #${order.id}</div>
       <div><b>Date:</b> ${order.date}</div>
       <div><b>Name:</b> ${order.profile.name}</div>
-      <div><b>Delivery:</b> ${order.profile.address}, ${order.profile.state}, ${order.profile.country} (${order.profile.pincode})</div>
+      <div><b>Delivery:</b> ${order.profile.address}, ${order.profile.state}, ${
+        order.profile.country
+      } (${order.profile.pincode})</div>
       <div>
         <ul style="list-style: inside; padding-left: 1em; margin: 0.5em 0;">
-          ${order.items.map(item => `<li>${item.title} x ${item.qty}</li>`).join("")}
+          ${order.items
+            .map((item) => `<li>${item.title} x ${item.qty}</li>`)
+            .join("")}
         </ul>
       </div>
       <div class="text-success"><b>Total: ${formatKesh(order.total)}</b></div>
     `;
-    ordersList.appendChild(li);
-  });
+      ordersList.appendChild(li);
+    });
 }
 
 // ========== Account ==========
