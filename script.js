@@ -66,7 +66,7 @@ function updateCartCount() {
 }
 
 // ================== GOOGLE BOOKS FETCH ==================
-async function fetchBooks({ q = null, category = null, maxResults = 18 } = {}) {
+async function fetchBooks({ q = null, category = null, maxResults = 10 } = {}) {
   let query = "";
   if (q) {
     query = q;
