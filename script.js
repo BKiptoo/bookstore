@@ -1,4 +1,4 @@
-// Google Books subject categories used in dropdowns & homepage (match with my HTML links)
+// ================== CONFIG & CONSTANTS ==================
 const CATEGORIES = [
   {
     id: "Horror",
@@ -34,7 +34,7 @@ const CATEGORIES = [
 const GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes";
 const DEFAULT_IMG = "https://via.placeholder.com/100x150?text=No+Cover";
 
-// ========== Utility Functions ==========
+// ================== UTILITIES ==================
 function formatKesh(amount) {
   if (typeof amount !== "number" || isNaN(amount)) return "Ksh0.00";
   return `Ksh${amount.toLocaleString("en-KE")}.00`;
@@ -65,10 +65,20 @@ function updateCartCount() {
     .forEach((el) => (el.textContent = count));
 }
 
-// ========== Google Books Fetch ==========
-async function fetchBooksByCategory(subject, maxResults = 12) {
+// ================== GOOGLE BOOKS FETCH ==================
+async function fetchBooks({ q = null, category = null, maxResults = 18 } = {}) {
+  let query = "";
+  if (q) {
+    query = q;
+  } else if (category) {
+    query = `subject:"${category}"`;
+  } else {
+    // Default: random books (use a random letter as query for variety)
+    const randomLetter = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+    query = randomLetter;
+  }
   const params = new URLSearchParams({
-    q: `subject:"${subject}"`,
+    q: query,
     maxResults,
     printType: "books",
     orderBy: "relevance",
@@ -78,7 +88,6 @@ async function fetchBooksByCategory(subject, maxResults = 12) {
   if (!data.items) return [];
   return data.items.map((item) => {
     const info = item.volumeInfo;
-    // Random price for demo purposes if no price is available
     let price = Math.floor(Math.random() * 1000) + 500;
     if (
       item.saleInfo &&
@@ -89,7 +98,7 @@ async function fetchBooksByCategory(subject, maxResults = 12) {
     }
     return {
       id: item.id,
-      title: info.title,
+      title: info.title || "Untitled",
       author: (info.authors && info.authors.join(", ")) || "Unknown",
       price,
       img:
@@ -100,7 +109,7 @@ async function fetchBooksByCategory(subject, maxResults = 12) {
   });
 }
 
-// ========== Banner Slider ==========
+// ================== BANNER SLIDER ==================
 function initBannerSlider() {
   const slider = document.querySelector(".banner-slider");
   if (!slider) return;
@@ -114,7 +123,7 @@ function initBannerSlider() {
   }, 3400);
 }
 
-// ========== Home Categories ==========
+// ================== HOME PAGE ==================
 function renderCategories() {
   const container = document.getElementById("home-categories");
   if (!container) return;
@@ -130,38 +139,44 @@ function renderCategories() {
       <div class="fw-bold">${cat.name}</div>
     `;
     card.onclick = () => {
-      // Go to books.html with category in query
-      window.location.href = `books.html?category=${encodeURIComponent(
-        cat.id
-      )}`;
+      window.location.href = `books.html?category=${encodeURIComponent(cat.id)}`;
     };
     container.appendChild(card);
   });
 }
 
-// ========== Books Page ==========
+// ================== BOOKS PAGE ==================
 async function renderBooksPage() {
-  // Get category from URL query
-  const urlParams = new URLSearchParams(window.location.search);
-  const categoryId = urlParams.get("category") || "Horror";
-  const cat = CATEGORIES.find((c) => c.id === categoryId);
+  const booksList = document.getElementById("books-list");
   const title = document.getElementById("books-category-title");
-  if (title) title.textContent = cat ? cat.name + " Books" : "Books";
+  const urlParams = new URLSearchParams(window.location.search);
+  const q = urlParams.get("q");
+  const category = urlParams.get("category");
 
-  const list = document.getElementById("books-list");
-  if (!list) return;
-  list.innerHTML = `<div class="text-center mt-4 mb-4 w-100"><div class="spinner-border text-primary" role="status"></div></div>`;
+  // Set title
+  if (q) {
+    title.textContent = `Search results for "${q}"`;
+  } else if (category) {
+    const cat = CATEGORIES.find((c) => c.id === category);
+    title.textContent = cat ? `${cat.name} Books` : "Books";
+  } else {
+    title.textContent = "Random Books";
+  }
+
+  booksList.innerHTML = `<div class="text-center mt-4 mb-4 w-100"><div class="spinner-border text-primary" role="status"></div></div>`;
+
   let books = [];
   try {
-    books = await fetchBooksByCategory(categoryId);
-  } catch {
-    // fallback empty
+    books = await fetchBooks({ q, category });
+  } catch (e) {
+    //
   }
   if (!books.length) {
-    list.innerHTML = `<div class="text-center text-muted my-5 w-100">No books found in this category.</div>`;
+    booksList.innerHTML = `<div class="text-center text-muted my-5 w-100">No books found.</div>`;
     return;
   }
-  list.innerHTML = "";
+
+  booksList.innerHTML = "";
   books.forEach((book) => {
     const col = document.createElement("div");
     col.className = "col";
@@ -171,17 +186,29 @@ async function renderBooksPage() {
         <div class="book-title">${book.title}</div>
         <div class="book-author">by ${book.author}</div>
         <div class="book-price">${formatKesh(book.price)}</div>
-        <button class="btn btn-outline-primary mt-auto" data-id="${
-          book.id
-        }">Add to Cart</button>
+        <button class="btn btn-outline-primary mt-auto" data-id="${book.id}">Add to Cart</button>
       </div>
     `;
     col.querySelector("button").onclick = () => addToCart(book);
-    list.appendChild(col);
+    booksList.appendChild(col);
   });
 }
 
-// ========== Cart ==========
+// ========== CATEGORY DROPDOWN (for SPA-like UX, optional) ==========
+function setupDropdownLinks() {
+  document.querySelectorAll("#books-dropdown a.dropdown-item").forEach(link => {
+    link.addEventListener("click", function(e) {
+      e.preventDefault();
+      const href = this.getAttribute("href");
+      window.location.href = href;
+    });
+  });
+}
+
+// ================== SEARCH HANDLING ==================
+// (Already handled by renderBooksPage - if ?q= is present, it will show search results)
+
+// ================== CART ==================
 function addToCart(book) {
   let cart = getCart();
   const found = cart.find((item) => item.id === book.id);
@@ -229,17 +256,14 @@ function renderCartList() {
   if (cartTotal) cartTotal.textContent = formatKesh(total);
 }
 
-// ========== Cart Order Modal ==========
+// ================== CART ORDER MODAL ==================
 function setupOrderModal() {
   const placeOrderBtn = document.getElementById("btn-place-order");
   if (!placeOrderBtn) return;
-  // Bootstrap modal instance
   const orderDetailsModalElem = document.getElementById("orderDetailsModal");
   let orderDetailsModal = null;
   if (orderDetailsModalElem && window.bootstrap) {
-    orderDetailsModal = bootstrap.Modal.getOrCreateInstance(
-      orderDetailsModalElem
-    );
+    orderDetailsModal = bootstrap.Modal.getOrCreateInstance(orderDetailsModalElem);
   }
   placeOrderBtn.onclick = () => {
     if (!getCart().length) {
@@ -256,7 +280,6 @@ function setupOrderModal() {
         this.classList.add("was-validated");
         return false;
       }
-      // Save user data
       const profile = {
         name: document.getElementById("order-name").value.trim(),
         phone: document.getElementById("order-phone").value.trim(),
@@ -267,7 +290,6 @@ function setupOrderModal() {
         email: document.getElementById("order-email").value.trim(),
       };
       saveProfile(profile);
-      // Create order
       const cart = getCart();
       const order = {
         id: Date.now(),
@@ -301,7 +323,7 @@ function showOrderForm(orderDetailsModal) {
   if (orderDetailsModal) orderDetailsModal.show();
 }
 
-// ========== Orders ==========
+// ================== ORDERS ==================
 function renderOrders() {
   const ordersList = document.getElementById("orders-list");
   if (!ordersList) return;
@@ -321,14 +343,10 @@ function renderOrders() {
       <div class="fw-bold mb-1">Order #${order.id}</div>
       <div><b>Date:</b> ${order.date}</div>
       <div><b>Name:</b> ${order.profile.name}</div>
-      <div><b>Delivery:</b> ${order.profile.address}, ${order.profile.state}, ${
-        order.profile.country
-      } (${order.profile.pincode})</div>
+      <div><b>Delivery:</b> ${order.profile.address}, ${order.profile.state}, ${order.profile.country} (${order.profile.pincode})</div>
       <div>
         <ul style="list-style: inside; padding-left: 1em; margin: 0.5em 0;">
-          ${order.items
-            .map((item) => `<li>${item.title} x ${item.qty}</li>`)
-            .join("")}
+          ${order.items.map((item) => `<li>${item.title} x ${item.qty}</li>`).join("")}
         </ul>
       </div>
       <div class="text-success"><b>Total: ${formatKesh(order.total)}</b></div>
@@ -337,7 +355,7 @@ function renderOrders() {
     });
 }
 
-// ========== Account ==========
+// ================== ACCOUNT ==================
 function setupAccountForm() {
   const form = document.getElementById("account-form");
   if (!form) return;
@@ -358,13 +376,12 @@ function setupAccountForm() {
   };
 }
 
-// ========== Router (runs code only on the relevant page) ==========
+// ================== INIT ROUTER ==================
 document.addEventListener("DOMContentLoaded", function () {
-  // Year in footer
+  // Footer year
   const yearSpan = document.getElementById("year");
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-  // Update cart count everywhere
   updateCartCount();
 
   // Home page
@@ -376,6 +393,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Books page
   if (document.getElementById("books-list")) {
     renderBooksPage();
+    setupDropdownLinks();
   }
 
   // Cart page
