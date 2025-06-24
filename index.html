@@ -10,40 +10,52 @@
     <header>
         <div class="header-content">
             <h1>Modern Bookstore</h1>
-            <p>Discover your next favorite book</p>
+            <p class="subtitle">Discover your next favorite book</p>
             <div class="header-icons">
-                <div class="cart" id="cart-toggle">
-                    <span class="cart-icon">🛒</span>
-                    <span id="cart-count">0</span>
-                </div>
-                <div class="wishlist" id="wishlist-toggle">
-                    <span class="wishlist-icon">☆</span>
-                    <span id="wishlist-count">0</span>
-                </div>
+                <button class="icon-btn" id="cart-toggle" aria-label="Open cart">
+                    <span class="cart-icon" aria-hidden="true">🛒</span>
+                    <span class="count" id="cart-count">0</span>
+                </button>
+                <button class="icon-btn" id="wishlist-toggle" aria-label="Open wishlist">
+                    <span class="wishlist-icon" aria-hidden="true">☆</span>
+                    <span class="count" id="wishlist-count">0</span>
+                </button>
             </div>
         </div>
     </header>
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search for books...">
-        <button id="search-button">Search</button>
-    </div>
-    <div class="container">
-        <div id="book-grid" class="book-grid"></div>
-    </div>
+    <main>
+        <section class="search-container">
+            <input type="text" id="search-input" placeholder="Search for books...">
+            <button id="search-button">Search</button>
+        </section>
+        <section class="container">
+            <div id="book-grid" class="book-grid">
+                <!-- Books will be dynamically loaded here -->
+            </div>
+        </section>
+    </main>
     <div id="cart-modal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" id="close-cart">×</span>
+            <span class="close-modal" id="close-cart" aria-label="Close cart">&times;</span>
             <h2>Your Cart</h2>
             <div id="cart-items"></div>
         </div>
     </div>
     <div id="wishlist-modal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" id="close-wishlist">×</span>
+            <span class="close-modal" id="close-wishlist" aria-label="Close wishlist">&times;</span>
             <h2>Your Wishlist</h2>
             <div id="wishlist-items"></div>
         </div>
     </div>
+    <footer>
+        <p>&copy; 2023 Modern Bookstore. All rights reserved.</p>
+        <p>Follow us on:
+            <a href="#" class="social-link">Facebook</a>,
+            <a href="#" class="social-link">Twitter</a>,
+            <a href="#" class="social-link">Instagram</a>
+        </p>
+    </footer>
     <script src="src/script.js"></script>
 </body>
 </html>
